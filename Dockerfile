@@ -1,28 +1,24 @@
-# Stage 1: Builder
-FROM rustlang/rust:nightly-bullseye as builder
+# Stage 1: Chef - Compute recipe
+FROM rustlang/rust:nightly-bullseye as chef
 WORKDIR /app
+RUN cargo install cargo-chef --locked
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    pkg-config \
-    libssl-dev \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
+# Stage 2: Planner - Create recipe.json
+FROM chef as planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
 
-# Create empty project for caching dependencies
-RUN cargo init --name wh2pg
-COPY Cargo.toml ./
-
-# Build dependencies
-RUN cargo build --release && rm src/*.rs
-
-# Copy source code
-COPY src ./src
+# Stage 3: Builder - Build dependencies and application
+FROM chef as builder
+COPY --from=planner /app/recipe.json recipe.json
+# Build dependencies - this is the caching layer!
+RUN cargo chef cook --release --recipe-path recipe.json
 
 # Build application
-RUN touch src/main.rs && cargo build --release
+COPY . .
+RUN cargo build --release
 
-# Stage 2: Runtime - Minimal image
+# Stage 4: Runtime - Minimal image
 FROM gcr.io/distroless/cc-debian12
 WORKDIR /app
 
