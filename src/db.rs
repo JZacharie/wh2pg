@@ -32,13 +32,18 @@ pub async fn init_db(pool: &PgPool) -> Result<(), sqlx::Error> {
             source_ip VARCHAR(45),
             headers JSONB
         );
-        
-        CREATE INDEX IF NOT EXISTS idx_received_at ON webhook_events(received_at);
-        CREATE INDEX IF NOT EXISTS idx_payload ON webhook_events USING GIN(payload);
         "#
     )
     .execute(pool)
     .await?;
+
+    sqlx::query("CREATE INDEX IF NOT EXISTS idx_received_at ON webhook_events(received_at);")
+        .execute(pool)
+        .await?;
+
+    sqlx::query("CREATE INDEX IF NOT EXISTS idx_payload ON webhook_events USING GIN(payload);")
+        .execute(pool)
+        .await?;
 
     info!("Database schema initialized successfully");
     Ok(())

@@ -30,7 +30,7 @@ fn init_telemetry() {
     // Note: Stdout exporter removed to avoid dependency version mismatches.
     // In production, use OTLP exporter.
     let tracer = sdktrace::TracerProvider::builder()
-        .with_resource(Resource::new(vec![KeyValue::new("service.name", "wh2pg")]))
+        .with_config(sdktrace::Config::default().with_resource(Resource::new(vec![KeyValue::new("service.name", "wh2pg")])))
         .build();
 
     let telemetry = tracing_opentelemetry::layer().with_tracer(tracer.tracer("wh2pg"));

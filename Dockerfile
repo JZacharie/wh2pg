@@ -1,7 +1,7 @@
 # Multi-stage build pour optimiser la taille de l'image finale
 
 # Stage 1: Builder
-FROM rust:1.75-bullseye as builder
+FROM rustlang/rust:nightly-bullseye as builder
 
 # Installer les dépendances système nécessaires
 RUN apt-get update && apt-get install -y \
@@ -15,7 +15,7 @@ WORKDIR /app
 RUN cargo init --name wh2pg
 
 # Copier les fichiers de dépendances
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml ./
 
 # Build des dépendances seulement (pour cache)
 RUN cargo build --release && rm src/*.rs

@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  wh2pg:
+    image: wh2pg:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgresql://webhook_user:secure_password@postgres:5432/webhooks
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=webhooks
+      - DB_USER=webhook_user
+      - DB_PASSWORD=secure_password
+      - DB_SSL_MODE=disable
+      - RUST_LOG=info
+    depends_on:
+      - postgres
+    restart: on-failure
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: webhooks
+      POSTGRES_USER: webhook_user
+      POSTGRES_PASSWORD: secure_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
