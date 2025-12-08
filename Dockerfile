@@ -1,63 +1,36 @@
-# Multi-stage build pour optimiser la taille de l'image finale
-
 # Stage 1: Builder
 FROM rustlang/rust:nightly-bullseye as builder
+WORKDIR /app
 
-# Installer les dépendances système nécessaires
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Créer un nouveau projet vide pour cacher les dépendances
-WORKDIR /app
+# Create empty project for caching dependencies
 RUN cargo init --name wh2pg
-
-# Copier les fichiers de dépendances
 COPY Cargo.toml ./
 
-# Build des dépendances seulement (pour cache)
+# Build dependencies
 RUN cargo build --release && rm src/*.rs
 
-# Copier le code source
+# Copy source code
 COPY src ./src
 
-# Build de l'application
-# Touch main.rs pour forcer la recompilation
-RUN touch src/main.rs && \
-    cargo build --release
+# Build application
+RUN touch src/main.rs && cargo build --release
 
-# Stage 2: Runtime
-FROM debian:bullseye-slim
-
-# Installer les dépendances runtime
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    libpq5 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Créer un utilisateur non-root
-RUN useradd -m -u 1000 wh2pg
-
-# Créer le répertoire de travail
+# Stage 2: Runtime - Minimal image
+FROM gcr.io/distroless/cc-debian12
 WORKDIR /app
 
-# Copier le binaire depuis le builder
+# Copy binary from builder
 COPY --from=builder /app/target/release/wh2pg /app/wh2pg
 
-# Changer le propriétaire
-RUN chown -R wh2pg:wh2pg /app
-
-# Utiliser l'utilisateur non-root
-USER wh2pg
-
-# Exposer le port
+# Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ["/app/wh2pg", "health"] || exit 1
-
-# Lancer l'application
+# Run application
 CMD ["/app/wh2pg"]
