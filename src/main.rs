@@ -3,7 +3,7 @@ use actix_web_opentelemetry::RequestTracing;
 use dotenv::dotenv;
 use opentelemetry::{global, KeyValue, trace::TracerProvider};
 use opentelemetry_sdk::{
-    trace::{self as sdktrace, Config},
+    trace::{self as sdktrace},
     Resource,
     propagation::TraceContextPropagator,
 };
@@ -21,7 +21,7 @@ fn init_telemetry() {
 
     // Initialize Prometheus exporter
     let registry = prometheus::Registry::new();
-    let exporter = opentelemetry_prometheus::exporter()
+    let _exporter = opentelemetry_prometheus::exporter()
         .with_registry(registry.clone())
         .build()
         .expect("Failed to create prometheus exporter");
@@ -49,15 +49,8 @@ fn init_telemetry() {
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     
-    // Initialize telemetry
-    // Note: For simplicity in this example we skip full OTLP setup and use stdout/prometheus
-    // In production you would configure OTLP exporter here
-    
-    // Initialize logging if not using full telemetry
-    if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG", "info");
-    }
-    tracing_subscriber::fmt::init();
+    // Initialize telemetry (Tracing + Prometheus)
+    init_telemetry();
 
     info!("Starting wh2pg service...");
 

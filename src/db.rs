@@ -1,6 +1,6 @@
 use sqlx::postgres::{PgPoolOptions, PgPool};
 use std::env;
-use tracing::{info, error};
+use tracing::info;
 
 pub async fn init_pool() -> PgPool {
     let database_url = env::var("DATABASE_URL")
