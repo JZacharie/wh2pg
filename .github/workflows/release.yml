@@ -87,4 +87,5 @@ jobs:
       - name: Push Helm Chart
         run: |
           CHART_PACKAGE=$(ls wh2pg-*.tgz)
-          helm push $CHART_PACKAGE oci://${{ env.REGISTRY }}/${{ github.repository_owner }}/charts
+          OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          helm push $CHART_PACKAGE oci://${{ env.REGISTRY }}/$OWNER_LOWER/charts
