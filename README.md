@@ -249,6 +249,73 @@ helm install wh2pg oci://ghcr.io/jzacharie/charts/wh2pg
 
 Les versions disponibles correspondent aux tags Git du projet. Consultez la page [Releases](https://github.com/JZacharie/wh2pg/releases) pour voir toutes les versions publiées.
 
+### Déploiement avec ArgoCD
+
+#### Configuration ArgoCD avec OCI Registry (Recommandé)
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: wh2pg
+  namespace: argocd
+spec:
+  destination:
+    namespace: wh2pg
+    server: https://kubernetes.default.svc
+  project: default
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    # Chart Helm depuis OCI registry
+    - chart: wh2pg
+      repoURL: oci://ghcr.io/jzacharie/charts
+      targetRevision: '*'  # ou version spécifique comme '1.0.0'
+      helm:
+        valueFiles:
+          - $values/values/wh2pg/values.yaml
+    # Repository Git pour les values
+    - ref: values
+      repoURL: git@github.com:votre-org/votre-repo.git
+      targetRevision: main
+```
+
+#### Configuration ArgoCD avec HTTPS Repository (Alternative)
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: wh2pg
+  namespace: argocd
+spec:
+  destination:
+    namespace: wh2pg
+    server: https://kubernetes.default.svc
+  project: default
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+  sources:
+    # Chart Helm depuis HTTPS repository
+    - chart: wh2pg
+      repoURL: https://jzacharie.github.io/wh2pg
+      targetRevision: '*'  # ou version spécifique comme '1.0.0'
+      helm:
+        valueFiles:
+          - $values/values/wh2pg/values.yaml
+    # Repository Git pour les values
+    - ref: values
+      repoURL: git@github.com:votre-org/votre-repo.git
+      targetRevision: main
+```
+
+> [!TIP]
+> **Quelle option choisir pour ArgoCD ?**
+> - **OCI** : Plus moderne, pas besoin de `helm repo add`, authentification via registry
+> - **HTTPS** : Plus traditionnel, fonctionne avec tous les outils Helm, plus facile à déboguer
+
 ### Installation depuis les sources (Helm local)
 
 1. **Configurer les valeurs**
