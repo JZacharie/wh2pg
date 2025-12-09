@@ -190,7 +190,41 @@ volumes:
 
 ## ☸️ Déploiement Kubernetes
 
-### Avec Helm
+### Installation depuis le Registry Helm
+
+Le chart Helm est publié automatiquement sur GitHub Container Registry (GHCR) lors de chaque release taggée.
+
+#### Installer depuis GHCR (OCI Registry)
+
+```bash
+# Installer la dernière version
+helm install wh2pg oci://ghcr.io/jzacharie/charts/wh2pg
+
+# Installer une version spécifique
+helm install wh2pg oci://ghcr.io/jzacharie/charts/wh2pg --version 1.0.0
+
+# Avec un fichier de valeurs personnalisé
+helm install wh2pg oci://ghcr.io/jzacharie/charts/wh2pg -f values-prod.yaml
+
+# Mettre à jour une installation existante
+helm upgrade wh2pg oci://ghcr.io/jzacharie/charts/wh2pg --version 1.0.1
+```
+
+#### Authentification (si le repository est privé)
+
+```bash
+# Se connecter à GHCR avec un Personal Access Token
+echo $GITHUB_TOKEN | helm registry login ghcr.io -u <username> --password-stdin
+
+# Puis installer le chart
+helm install wh2pg oci://ghcr.io/jzacharie/charts/wh2pg
+```
+
+#### Lister les versions disponibles
+
+Les versions disponibles correspondent aux tags Git du projet. Consultez la page [Releases](https://github.com/JZacharie/wh2pg/releases) pour voir toutes les versions publiées.
+
+### Installation depuis les sources (Helm local)
 
 1. **Configurer les valeurs**
    ```bash

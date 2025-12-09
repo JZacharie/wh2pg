@@ -81,11 +81,25 @@ jobs:
           sed -i "s/^version: .*/version: $VERSION/" helm/Chart.yaml
           sed -i "s/^appVersion: .*/appVersion: \"$VERSION\"/" helm/Chart.yaml
 
+      - name: Validate Helm Chart
+        run: |
+          helm lint helm/
+          echo "Chart validation successful"
+
       - name: Package Helm Chart
-        run: helm package helm/
+        run: |
+          helm package helm/
+          echo "Packaged chart:"
+          ls -lh wh2pg-*.tgz
 
       - name: Push Helm Chart
         run: |
-          CHART_PACKAGE=$(ls wh2pg-*.tgz)
+          CHART_PACKAGE=$(ls wh2pg-*.tgz | head -n 1)
+          if [ -z "$CHART_PACKAGE" ]; then
+            echo "Error: No chart package found"
+            exit 1
+          fi
+          echo "Pushing chart: $CHART_PACKAGE"
           OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           helm push $CHART_PACKAGE oci://${{ env.REGISTRY }}/$OWNER_LOWER/charts
+          echo "Chart pushed successfully to oci://${{ env.REGISTRY }}/$OWNER_LOWER/charts"
