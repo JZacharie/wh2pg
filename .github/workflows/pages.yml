@@ -46,36 +46,57 @@ jobs:
           echo "Packaged chart:"
           ls -lh wh2pg-*.tgz
 
-      - name: Checkout gh-pages branch
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          path: gh-pages
+      - name: Prepare gh-pages directory
+        run: |
+          # Check if gh-pages branch exists
+          if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
+            echo "gh-pages branch exists, checking it out"
+            git fetch origin gh-pages
+            git checkout -b gh-pages origin/gh-pages
+          else
+            echo "gh-pages branch does not exist, creating it"
+            git checkout --orphan gh-pages
+            git rm -rf .
+            echo "# Helm Repository" > README.md
+            git add README.md
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "Initialize gh-pages branch"
+            git push origin gh-pages
+          fi
+          
+          # Create a clean working directory
+          cd ..
+          mkdir -p gh-pages-work
+          cd gh-pages-work
+          
+          # Checkout gh-pages in the working directory
+          git clone --branch gh-pages --depth 1 https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
 
       - name: Update Helm Repository Index
         run: |
-          # Copy new chart package to gh-pages
-          cp wh2pg-*.tgz gh-pages/
+          # Copy new chart package to gh-pages working directory
+          cp wh2pg-*.tgz gh-pages-work/
           
           # Generate/update index
-          cd gh-pages
+          cd gh-pages-work
           helm repo index . --url https://jzacharie.github.io/wh2pg
           
           # Show what we're publishing
           echo "=== Repository Contents ==="
-          ls -lh *.tgz
+          ls -lh *.tgz 2>/dev/null || echo "No previous packages"
           echo ""
           echo "=== Index.yaml ==="
           cat index.yaml
 
       - name: Commit and Push to gh-pages
         run: |
-          cd gh-pages
+          cd gh-pages-work
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           git commit -m "Publish Helm chart version ${{ steps.get_version.outputs.VERSION }}" || echo "No changes to commit"
-          git push origin gh-pages
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git gh-pages
 
       - name: Summary
         run: |
