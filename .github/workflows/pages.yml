@@ -1,0 +1,89 @@
+name: Publish Helm Chart to GitHub Pages
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  publish-pages:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get the version
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.12.0
+
+      - name: Update Chart Version
+        run: |
+          VERSION=${{ steps.get_version.outputs.VERSION }}
+          sed -i "s/^version: .*/version: $VERSION/" helm/Chart.yaml
+          sed -i "s/^appVersion: .*/appVersion: \"$VERSION\"/" helm/Chart.yaml
+
+      - name: Validate Helm Chart
+        run: |
+          helm lint helm/
+          echo "Chart validation successful"
+
+      - name: Package Helm Chart
+        run: |
+          helm package helm/
+          echo "Packaged chart:"
+          ls -lh wh2pg-*.tgz
+
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Update Helm Repository Index
+        run: |
+          # Copy new chart package to gh-pages
+          cp wh2pg-*.tgz gh-pages/
+          
+          # Generate/update index
+          cd gh-pages
+          helm repo index . --url https://jzacharie.github.io/wh2pg
+          
+          # Show what we're publishing
+          echo "=== Repository Contents ==="
+          ls -lh *.tgz
+          echo ""
+          echo "=== Index.yaml ==="
+          cat index.yaml
+
+      - name: Commit and Push to gh-pages
+        run: |
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Publish Helm chart version ${{ steps.get_version.outputs.VERSION }}" || echo "No changes to commit"
+          git push origin gh-pages
+
+      - name: Summary
+        run: |
+          echo "✅ Helm chart published to GitHub Pages"
+          echo "📦 Version: ${{ steps.get_version.outputs.VERSION }}"
+          echo "🌐 Repository URL: https://jzacharie.github.io/wh2pg"
+          echo ""
+          echo "To use this repository:"
+          echo "  helm repo add wh2pg https://jzacharie.github.io/wh2pg"
+          echo "  helm repo update"
+          echo "  helm install wh2pg wh2pg/wh2pg --version ${{ steps.get_version.outputs.VERSION }}"
