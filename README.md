@@ -192,9 +192,34 @@ volumes:
 
 ### Installation depuis le Registry Helm
 
-Le chart Helm est publié automatiquement sur GitHub Container Registry (GHCR) lors de chaque release taggée.
+Le chart Helm est publié automatiquement lors de chaque release taggée sur **deux repositories** :
+- **HTTPS** (GitHub Pages) : Compatible avec tous les outils Helm
+- **OCI** (GHCR) : Moderne, recommandé pour Helm 3.8+
 
-#### Installer depuis GHCR (OCI Registry)
+#### Option 1 : Installer depuis HTTPS (GitHub Pages)
+
+```bash
+# Ajouter le repository Helm
+helm repo add wh2pg https://jzacharie.github.io/wh2pg
+helm repo update
+
+# Lister les versions disponibles
+helm search repo wh2pg
+
+# Installer la dernière version
+helm install wh2pg wh2pg/wh2pg
+
+# Installer une version spécifique
+helm install wh2pg wh2pg/wh2pg --version 1.0.0
+
+# Avec un fichier de valeurs personnalisé
+helm install wh2pg wh2pg/wh2pg -f values-prod.yaml
+
+# Mettre à jour une installation existante
+helm upgrade wh2pg wh2pg/wh2pg
+```
+
+#### Option 2 : Installer depuis OCI (GHCR)
 
 ```bash
 # Installer la dernière version
