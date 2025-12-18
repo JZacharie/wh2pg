@@ -11,10 +11,10 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  publish-pages:
+  build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,47 +45,13 @@ jobs:
 
       - name: Package Helm Chart
         run: |
-          helm package helm/
-          # Move package to a temporary location so it doesn't get lost during checkout
-          mkdir -p /tmp/chart-output
-          mv wh2pg-*.tgz /tmp/chart-output/
+          mkdir -p .deploy
+          helm package helm/ -d .deploy/
 
-      - name: Checkout gh-pages branch
+      - name: Create Helm Repository Index
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Fetch all branches
-          git fetch origin
-          
-          if git rev-parse --verify origin/gh-pages >/dev/null 2>&1; then
-            echo "Checking out existing gh-pages branch"
-            git checkout gh-pages
-            git pull origin gh-pages
-          else
-            echo "Creating new orphan gh-pages branch"
-            git checkout --orphan gh-pages
-            git rm -rf .
-            echo "# Helm Repository" > README.md
-            git add README.md
-            git commit -m "Initialize gh-pages"
-            # Push immediately to establish the branch
-            git push origin gh-pages
-          fi
-
-      - name: Update Helm Repository Index
-        run: |
-          # Copy new chart package from temp location
-          cp /tmp/chart-output/wh2pg-*.tgz .
-          
-          # Generate/update index
-          if [ -f index.yaml ]; then
-            echo "Updating existing index.yaml"
-            helm repo index . --url https://jzacharie.github.io/wh2pg --merge index.yaml
-          else
-            echo "Creating new index.yaml"
-            helm repo index . --url https://jzacharie.github.io/wh2pg
-          fi
+          cd .deploy
+          helm repo index . --url https://jzacharie.github.io/wh2pg
           
           # Show what we're publishing
           echo "=== Repository Contents ==="
@@ -94,20 +60,21 @@ jobs:
           echo "=== Index.yaml ==="
           cat index.yaml
 
-      - name: Commit and Push to gh-pages
-        run: |
-          git add .
-          
-          # Check if there are changes
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Publish Helm chart ${{ steps.get_version.outputs.VERSION }}"
-            
-            # Pull with rebase before pushing to handle any concurrent updates
-            git pull --rebase origin gh-pages
-            git push origin gh-pages
-            
-            echo "✅ Helm chart published to GitHub Pages"
-            echo "🌐 Repository URL: https://jzacharie.github.io/wh2pg"
-          fi
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .deploy
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
