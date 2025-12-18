@@ -190,6 +190,32 @@ volumes:
 
 ## ☸️ Déploiement Kubernetes
 
+### Configuration Initiale de GitHub Pages
+
+> [!IMPORTANT]
+> **Configuration requise pour accéder au Helm chart**
+> 
+> Le Helm chart est publié automatiquement sur GitHub Pages lors de chaque release taggée (tags `v*`). Pour que le repository Helm soit accessible, GitHub Pages doit être configuré :
+> 
+> 1. Aller dans **Settings** > **Pages** du repository
+> 2. Sous **Source**, sélectionner **GitHub Actions**
+> 3. Le Helm chart sera alors accessible à `https://jzacharie.github.io/wh2pg`
+> 
+> Cette configuration n'est nécessaire qu'une seule fois et est déjà effectuée pour ce repository.
+
+### Vérifier la Disponibilité du Repository
+
+Avant d'installer le chart, vous pouvez vérifier qu'il est bien accessible :
+
+```bash
+# Vérifier que l'index Helm est accessible
+curl -L https://jzacharie.github.io/wh2pg/index.yaml
+
+# Ou avec Helm
+helm repo add wh2pg https://jzacharie.github.io/wh2pg
+helm search repo wh2pg
+```
+
 ### Installation depuis le Registry Helm
 
 Le chart Helm est publié automatiquement lors de chaque release taggée sur **deux repositories** :
@@ -403,15 +429,37 @@ cargo fmt --check
 ## 🔄 CI/CD
 
 Le projet utilise GitHub Actions pour:
+
+### Build Continu (sur push vers `main`/`develop`)
 - Build automatique du Docker image
 - Push vers GitHub Container Registry (GHCR)
-- Tagging automatique (`latest`, version, commit SHA)
+- Tagging automatique (`latest`, branche, commit SHA)
 - Cache des layers Docker pour builds rapides
 
-### Utiliser l'image
+### Releases (sur tags `v*`)
+- Build et publication de l'image Docker avec tags sémantiques
+- Publication du Helm chart sur **deux registries** :
+  - **GitHub Pages** (HTTPS) : `https://jzacharie.github.io/wh2pg`
+  - **GHCR** (OCI) : `oci://ghcr.io/jzacharie/charts/wh2pg`
+
+### Créer une Release
 
 ```bash
-docker pull ghcr.io/<username>/wh2pg:latest
+# Créer un tag de version
+git tag v1.0.1
+git push origin v1.0.1
+
+# Le workflow GitHub Actions va automatiquement :
+# 1. Builder et publier l'image Docker
+# 2. Packager et publier le Helm chart sur GitHub Pages
+# 3. Publier le Helm chart sur GHCR (OCI registry)
+```
+
+### Utiliser l'image Docker
+
+```bash
+docker pull ghcr.io/jzacharie/wh2pg:latest
+docker pull ghcr.io/jzacharie/wh2pg:1.0.1
 ```
 
 ## 📊 Monitoring
