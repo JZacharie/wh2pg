@@ -25,11 +25,28 @@ pub async fn init_pool() -> PgPool {
 
     info!("Connecting to database...");
     
-    PgPoolOptions::new()
-        .max_connections(pool_size)
-        .connect(&database_url)
-        .await
-        .expect("Failed to create pool")
+    let mut retry_count = 0;
+    let max_retries = 10;
+    let retry_interval = std::time::Duration::from_secs(5);
+
+    loop {
+        match PgPoolOptions::new()
+            .max_connections(pool_size)
+            .connect(&database_url)
+            .await
+        {
+            Ok(pool) => return pool,
+            Err(e) => {
+                retry_count += 1;
+                if retry_count >= max_retries {
+                    panic!("Failed to connect to database after {} attempts: {}", max_retries, e);
+                }
+                info!("Database not ready (attempt {}/{}): {}. Retrying in {:?}...", 
+                      retry_count, max_retries, e, retry_interval);
+                tokio::time::sleep(retry_interval).await;
+            }
+        }
+    }
 }
 
 pub async fn init_db(pool: &PgPool) -> Result<(), sqlx::Error> {

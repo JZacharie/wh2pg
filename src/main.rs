@@ -69,12 +69,6 @@ async fn main() -> std::io::Result<()> {
         panic!("Failed to initialize Trivy schemas: {}", e);
     }
 
-    // Check if we should exit after initialization (useful for K8s init jobs)
-    if env::var("RUN_INIT_ONLY").unwrap_or_else(|_| "false".to_string()) == "true" {
-        info!("Database initialization complete. RUN_INIT_ONLY is true, exiting.");
-        return Ok(());
-    }
-
     let host = env::var("SERVER_HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
     let port = env::var("SERVER_PORT").unwrap_or_else(|_| "8080".to_string());
     let addr = format!("{}:{}", host, port);
