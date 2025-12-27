@@ -16,6 +16,7 @@ jobs:
       contents: read
       packages: write
       id-token: write  # Required for attestation
+      attestations: write  # Required to persist attestations
     outputs:
       version: ${{ steps.get_version.outputs.VERSION }}
     steps:

@@ -21,6 +21,7 @@ jobs:
       contents: read
       packages: write
       id-token: write  # Required for attestation
+      attestations: write  # Required to persist attestations
 
     steps:
       - name: Checkout repository
