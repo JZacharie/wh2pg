@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 
+#[allow(dead_code)]
+
 // Generic Trivy Report Structure
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TrivyWebhookPayload {
     #[serde(rename = "type")]
@@ -15,6 +18,7 @@ pub struct TrivyWebhookPayload {
 }
 
 // Vulnerability Report
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct VulnerabilityReport {
     pub scanner: Scanner,
@@ -24,6 +28,7 @@ pub struct VulnerabilityReport {
     pub vulnerabilities: Vec<Vulnerability>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Scanner {
     pub name: String,
@@ -31,11 +36,13 @@ pub struct Scanner {
     pub version: String,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Registry {
     pub server: String,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Artifact {
     pub repository: String,
@@ -43,6 +50,7 @@ pub struct Artifact {
     pub digest: Option<String>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Summary {
     #[serde(rename = "criticalCount")]
@@ -59,6 +67,7 @@ pub struct Summary {
     pub none_count: i32,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Vulnerability {
     #[serde(rename = "vulnerabilityID")]
@@ -76,6 +85,7 @@ pub struct Vulnerability {
 }
 
 // Config Audit Report
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ConfigAuditReport {
     pub scanner: Scanner,
@@ -83,6 +93,7 @@ pub struct ConfigAuditReport {
     pub checks: Vec<ConfigCheck>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ConfigAuditSummary {
     #[serde(rename = "criticalCount")]
@@ -95,6 +106,7 @@ pub struct ConfigAuditSummary {
     pub low_count: i32,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ConfigCheck {
     #[serde(rename = "checkID")]
@@ -107,6 +119,7 @@ pub struct ConfigCheck {
 }
 
 // RBAC Assessment Report
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RbacAssessmentReport {
     pub scanner: Scanner,
@@ -115,6 +128,7 @@ pub struct RbacAssessmentReport {
 }
 
 // Exposed Secret Report
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ExposedSecretReport {
     pub scanner: Scanner,
@@ -122,6 +136,7 @@ pub struct ExposedSecretReport {
     pub secrets: Vec<ExposedSecret>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SecretSummary {
     #[serde(rename = "criticalCount")]
@@ -134,6 +149,7 @@ pub struct SecretSummary {
     pub low_count: i32,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ExposedSecret {
     pub target: String,
@@ -147,6 +163,7 @@ pub struct ExposedSecret {
 }
 
 // Cluster Compliance Report
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ClusterComplianceReport {
     pub name: String,
@@ -156,6 +173,7 @@ pub struct ClusterComplianceReport {
     pub control_checks: Vec<ControlCheck>,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ComplianceSummary {
     #[serde(rename = "passCount")]
@@ -164,6 +182,7 @@ pub struct ComplianceSummary {
     pub fail_count: i32,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ControlCheck {
     pub id: String,
