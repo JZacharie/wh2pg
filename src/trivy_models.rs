@@ -142,7 +142,8 @@ pub struct ExposedSecret {
     pub title: String,
     pub severity: String,
     pub category: String,
-    pub match: String,
+    #[serde(rename = "match")]
+    pub match_string: String,
 }
 
 // Cluster Compliance Report
