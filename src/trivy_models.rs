@@ -5,8 +5,11 @@ use chrono::{DateTime, Utc};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct K8sMetadata {
+    #[serde(default)]
     pub name: String,
+    #[serde(default)]
     pub namespace: Option<String>,
+    #[serde(default)]
     pub uid: String,
 }
 
