@@ -3,18 +3,59 @@ use chrono::{DateTime, Utc};
 
 #[allow(dead_code)]
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct K8sMetadata {
+    pub name: String,
+    pub namespace: Option<String>,
+    pub uid: String,
+}
+
 // Generic Trivy Report Structure
 #[allow(dead_code)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TrivyWebhookPayload {
-    #[serde(rename = "type")]
-    pub report_type: String,  // VulnerabilityReport, ConfigAuditReport, RbacAssessmentReport, ExposedSecretReport, ClusterComplianceReport
+    #[serde(alias = "kind", alias = "type")]
+    pub report_type: String,  // VulnerabilityReport, ConfigAuditReport, etc.
+    
+    #[serde(default)]
+    pub metadata: Option<K8sMetadata>,
+    
+    #[serde(default)]
     pub name: String,
+    
+    #[serde(default)]
     pub namespace: Option<String>,
+    
+    #[serde(default)]
     pub uid: String,
+    
     pub report: serde_json::Value,  // Full report as JSON
+    
     #[serde(default = "Utc::now")]
     pub timestamp: DateTime<Utc>,
+}
+
+impl TrivyWebhookPayload {
+    pub fn get_name(&self) -> &str {
+        if !self.name.is_empty() {
+            return &self.name;
+        }
+        self.metadata.as_ref().map(|m| m.name.as_str()).unwrap_or("")
+    }
+
+    pub fn get_namespace(&self) -> Option<&str> {
+        if self.namespace.is_some() {
+            return self.namespace.as_deref();
+        }
+        self.metadata.as_ref().and_then(|m| m.namespace.as_deref())
+    }
+
+    pub fn get_uid(&self) -> &str {
+        if !self.uid.is_empty() {
+            return &self.uid;
+        }
+        self.metadata.as_ref().map(|m| m.uid.as_str()).unwrap_or("")
+    }
 }
 
 // Vulnerability Report

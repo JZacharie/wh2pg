@@ -191,7 +191,7 @@ pub async fn receive_trivy_webhook(
         .collect();
 
     info!("Received Trivy {} report: {} (UID: {})", 
-          payload.report_type, payload.name, payload.uid);
+          payload.report_type, payload.get_name(), payload.get_uid());
 
     let result = match payload.report_type.as_str() {
         "VulnerabilityReport" => store_vulnerability_report(pool.get_ref(), &payload, peer_addr, headers).await,
@@ -269,9 +269,9 @@ async fn store_vulnerability_report(
         RETURNING id
         "#
     )
-    .bind(&payload.uid)
-    .bind(&payload.name)
-    .bind(&payload.namespace)
+    .bind(payload.get_uid())
+    .bind(payload.get_name())
+    .bind(payload.get_namespace())
     .bind(scanner_name)
     .bind(scanner_version)
     .bind(image_repo)
@@ -325,9 +325,9 @@ async fn store_configaudit_report(
         RETURNING id
         "#
     )
-    .bind(&payload.uid)
-    .bind(&payload.name)
-    .bind(&payload.namespace)
+    .bind(payload.get_uid())
+    .bind(payload.get_name())
+    .bind(payload.get_namespace())
     .bind(scanner_name)
     .bind(scanner_version)
     .bind(critical)
@@ -377,9 +377,9 @@ async fn store_rbac_report(
         RETURNING id
         "#
     )
-    .bind(&payload.uid)
-    .bind(&payload.name)
-    .bind(&payload.namespace)
+    .bind(payload.get_uid())
+    .bind(payload.get_name())
+    .bind(payload.get_namespace())
     .bind(scanner_name)
     .bind(scanner_version)
     .bind(critical)
@@ -429,9 +429,9 @@ async fn store_secret_report(
         RETURNING id
         "#
     )
-    .bind(&payload.uid)
-    .bind(&payload.name)
-    .bind(&payload.namespace)
+    .bind(payload.get_uid())
+    .bind(payload.get_name())
+    .bind(payload.get_namespace())
     .bind(scanner_name)
     .bind(scanner_version)
     .bind(critical)
@@ -475,8 +475,8 @@ async fn store_compliance_report(
         RETURNING id
         "#
     )
-    .bind(&payload.uid)
-    .bind(&payload.name)
+    .bind(payload.get_uid())
+    .bind(payload.get_name())
     .bind(compliance_title)
     .bind(pass_count)
     .bind(fail_count)
@@ -523,9 +523,9 @@ async fn store_infra_report(
         RETURNING id
         "#
     )
-    .bind(&payload.uid)
-    .bind(&payload.name)
-    .bind(&payload.namespace)
+    .bind(payload.get_uid())
+    .bind(payload.get_name())
+    .bind(payload.get_namespace())
     .bind(scanner_name)
     .bind(scanner_version)
     .bind(critical)
