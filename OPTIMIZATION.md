@@ -49,12 +49,23 @@
 - **60-75% de réduction du temps de build**
 - **Cache GitHub Actions** optimisé pour réutiliser les dépendances
 
-## Recommandations supplémentaires
+## Stratégie de build multi-plateforme
 
-Si vous avez besoin de builds ARM64 :
-1. Créer un workflow séparé pour les releases
-2. Utiliser des self-hosted runners avec plus de RAM
-3. N'activer ARM64 que sur les tags (releases)
+### Développement (branches main/develop)
+- **Plateformes** : `linux/amd64` uniquement
+- **Objectif** : Builds rapides pour itération rapide
+- **Workflow** : `.github/workflows/docker-build.yml`
+
+### Releases (tags v*)
+- **Plateformes** : `linux/amd64` + `linux/arm64`
+- **Objectif** : Compatibilité maximale pour production
+- **Workflow** : `.github/workflows/release.yml`
+- **Compromise** : Temps de build plus long acceptable pour releases officielles
+
+Cette approche offre le meilleur des deux mondes :
+- 🚀 Développement rapide avec builds single-platform
+- 🌍 Releases complètes avec support ARM64 pour Raspberry Pi, Apple Silicon, etc.
+
 
 ## Test en local
 
