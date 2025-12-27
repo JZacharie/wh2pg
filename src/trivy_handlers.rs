@@ -108,6 +108,30 @@ pub async fn init_trivy_schemas(pool: &PgPool) -> Result<(), sqlx::Error> {
     .execute(pool)
     .await?;
 
+    // Infra Assessment Reports Table
+    sqlx::query(
+        r#"
+        CREATE TABLE IF NOT EXISTS trivy_infra_reports (
+            id SERIAL PRIMARY KEY,
+            report_uid VARCHAR(255) UNIQUE NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            namespace VARCHAR(255),
+            scanner_name VARCHAR(100),
+            scanner_version VARCHAR(50),
+            critical_count INTEGER DEFAULT 0,
+            high_count INTEGER DEFAULT 0,
+            medium_count INTEGER DEFAULT 0,
+            low_count INTEGER DEFAULT 0,
+            full_report JSONB NOT NULL,
+            received_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            source_ip VARCHAR(45),
+            headers JSONB
+        );
+        "#
+    )
+    .execute(pool)
+    .await?;
+
     // Cluster Compliance Reports Table
     sqlx::query(
         r#"
@@ -139,6 +163,8 @@ pub async fn init_trivy_schemas(pool: &PgPool) -> Result<(), sqlx::Error> {
         "CREATE INDEX IF NOT EXISTS idx_rbac_received ON trivy_rbac_reports(received_at);",
         "CREATE INDEX IF NOT EXISTS idx_secret_namespace ON trivy_secret_reports(namespace);",
         "CREATE INDEX IF NOT EXISTS idx_secret_received ON trivy_secret_reports(received_at);",
+        "CREATE INDEX IF NOT EXISTS idx_infra_namespace ON trivy_infra_reports(namespace);",
+        "CREATE INDEX IF NOT EXISTS idx_infra_received ON trivy_infra_reports(received_at);",
         "CREATE INDEX IF NOT EXISTS idx_compliance_received ON trivy_compliance_reports(received_at);",
     ];
 
@@ -172,6 +198,7 @@ pub async fn receive_trivy_webhook(
         "ConfigAuditReport" => store_configaudit_report(pool.get_ref(), &payload, peer_addr, headers).await,
         "RbacAssessmentReport" => store_rbac_report(pool.get_ref(), &payload, peer_addr, headers).await,
         "ExposedSecretReport" => store_secret_report(pool.get_ref(), &payload, peer_addr, headers).await,
+        "InfraAssessmentReport" => store_infra_report(pool.get_ref(), &payload, peer_addr, headers).await,
         "ClusterComplianceReport" => store_compliance_report(pool.get_ref(), &payload, peer_addr, headers).await,
         _ => {
             warn!("Unknown Trivy report type: {}", payload.report_type);
@@ -453,6 +480,58 @@ async fn store_compliance_report(
     .bind(compliance_title)
     .bind(pass_count)
     .bind(fail_count)
+    .bind(report)
+    .bind(source_ip)
+    .bind(headers)
+    .fetch_one(pool)
+    .await?;
+
+    Ok(row.try_get("id").unwrap_or(0))
+}
+
+async fn store_infra_report(
+    pool: &PgPool,
+    payload: &TrivyWebhookPayload,
+    source_ip: Option<String>,
+    headers: serde_json::Value,
+) -> Result<i32, sqlx::Error> {
+    let report = &payload.report;
+    
+    let scanner_name = report["scanner"]["name"].as_str().unwrap_or("unknown");
+    let scanner_version = report["scanner"]["version"].as_str().unwrap_or("unknown");
+    
+    let summary = &report["summary"];
+    let critical = summary["criticalCount"].as_i64().unwrap_or(0) as i32;
+    let high = summary["highCount"].as_i64().unwrap_or(0) as i32;
+    let medium = summary["mediumCount"].as_i64().unwrap_or(0) as i32;
+    let low = summary["lowCount"].as_i64().unwrap_or(0) as i32;
+
+    let row = sqlx::query(
+        r#"
+        INSERT INTO trivy_infra_reports 
+        (report_uid, name, namespace, scanner_name, scanner_version,
+         critical_count, high_count, medium_count, low_count,
+         full_report, source_ip, headers)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        ON CONFLICT (report_uid) DO UPDATE SET
+            critical_count = EXCLUDED.critical_count,
+            high_count = EXCLUDED.high_count,
+            medium_count = EXCLUDED.medium_count,
+            low_count = EXCLUDED.low_count,
+            full_report = EXCLUDED.full_report,
+            received_at = NOW()
+        RETURNING id
+        "#
+    )
+    .bind(&payload.uid)
+    .bind(&payload.name)
+    .bind(&payload.namespace)
+    .bind(scanner_name)
+    .bind(scanner_version)
+    .bind(critical)
+    .bind(high)
+    .bind(medium)
+    .bind(low)
     .bind(report)
     .bind(source_ip)
     .bind(headers)
