@@ -1,0 +1,61 @@
+{
+    "apiVersion": "aquasecurity.github.io/v1alpha1",
+    "kind": "VulnerabilityReport",
+    "metadata": {
+        "annotations": {
+            "trivy-operator.aquasecurity.github.io/report-ttl": "72h0m0s"
+        },
+        "creationTimestamp": "2025-12-26T09:51:02Z",
+        "generation": 1,
+        "labels": {
+            "app.kubernetes.io/managed-by": "trivy-operator",
+            "resource-spec-hash": "6f6f7d487b",
+            "trivy-operator.container.name": "init",
+            "trivy-operator.resource.kind": "DaemonSet",
+            "trivy-operator.resource.name": "logger",
+            "trivy-operator.resource.namespace": "fission"
+        },
+        "name": "daemonset-logger-init",
+        "namespace": "fission",
+        "ownerReferences": [
+            {
+                "apiVersion": "apps/v1",
+                "blockOwnerDeletion": false,
+                "controller": true,
+                "kind": "DaemonSet",
+                "name": "logger",
+                "uid": "a69755df-313b-40d0-b09b-b86584f13005"
+            }
+        ],
+        "resourceVersion": "879264847",
+        "uid": "f2fb9475-e5dd-4c37-947d-8cbe434833d9"
+    },
+    "report": {
+        "artifact": {
+            "digest": "sha256:d80cd694d3e9467884fcb94b8ca1e20437d8a501096cdf367a5a1918a34fc2fd",
+            "repository": "library/busybox",
+            "tag": "latest"
+        },
+        "os": {
+            "family": ""
+        },
+        "registry": {
+            "server": "index.docker.io"
+        },
+        "scanner": {
+            "name": "Trivy",
+            "vendor": "Aqua Security",
+            "version": "0.66.0"
+        },
+        "summary": {
+            "criticalCount": 0,
+            "highCount": 0,
+            "lowCount": 0,
+            "mediumCount": 0,
+            "noneCount": 0,
+            "unknownCount": 0
+        },
+        "updateTimestamp": "2025-12-26T09:51:02Z",
+        "vulnerabilities": []
+    }
+}

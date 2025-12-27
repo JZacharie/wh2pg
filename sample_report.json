@@ -1,0 +1,267 @@
+{
+  "metadata": {
+    "name": "cronjob-cleanup-old-files-minio-cluster-pg-cleanup",
+    "namespace": "minio-prd",
+    "labels": {
+      "app.kubernetes.io/managed-by": "trivy-operator",
+      "resource-spec-hash": "56b564cc9b",
+      "trivy-operator.container.name": "cleanup",
+      "trivy-operator.resource.kind": "CronJob",
+      "trivy-operator.resource.name": "cleanup-old-files-minio-cluster-pg",
+      "trivy-operator.resource.namespace": "minio-prd"
+    },
+    "annotations": {
+      "trivy-operator.aquasecurity.github.io/report-ttl": "72h0m0s"
+    },
+    "ownerReferences": [
+      {
+        "apiVersion": "batch/v1",
+        "kind": "CronJob",
+        "name": "cleanup-old-files-minio-cluster-pg",
+        "uid": "a3dc498b-bf8a-4915-81d8-eaa0827adebd",
+        "controller": true,
+        "blockOwnerDeletion": false
+      }
+    ]
+  },
+  "report": {
+    "updateTimestamp": "2025-12-27T08:15:42Z",
+    "scanner": {
+      "name": "Trivy",
+      "vendor": "Aqua Security",
+      "version": "0.66.0"
+    },
+    "registry": {
+      "server": "index.docker.io"
+    },
+    "artifact": {
+      "repository": "minio/mc",
+      "digest": "sha256:a7fe349ef4bd8521fb8497f55c6042871b2ae640607cf99d9bede5e9bdf11727",
+      "tag": "latest"
+    },
+    "os": {
+      "family": "redhat",
+      "name": "9.6"
+    },
+    "summary": {
+      "criticalCount": 0,
+      "highCount": 2,
+      "mediumCount": 12,
+      "lowCount": 0,
+      "unknownCount": 0,
+      "noneCount": 0
+    },
+    "vulnerabilities": [
+      {
+        "vulnerabilityID": "CVE-2025-47914",
+        "resource": "golang.org/x/crypto",
+        "installedVersion": "v0.40.0",
+        "fixedVersion": "0.45.0",
+        "publishedDate": "2025-11-19T21:15:50Z",
+        "lastModifiedDate": "2025-12-11T19:36:41Z",
+        "severity": "MEDIUM",
+        "title": "golang.org/x/crypto/ssh/agent: in golang.org/x/crypto/ssh/agent",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-47914",
+        "links": [],
+        "score": 5.3,
+        "target": "",
+        "packagePURL": "pkg:golang/golang.org/x/crypto@v0.40.0"
+      },
+      {
+        "vulnerabilityID": "CVE-2025-58181",
+        "resource": "golang.org/x/crypto",
+        "installedVersion": "v0.40.0",
+        "fixedVersion": "0.45.0",
+        "publishedDate": "2025-11-19T21:15:50Z",
+        "lastModifiedDate": "2025-12-11T19:29:24Z",
+        "severity": "MEDIUM",
+        "title": "golang.org/x/crypto/ssh: in golang.org/x/crypto/ssh",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-58181",
+        "links": [],
+        "score": 5.3,
+        "target": "",
+        "packagePURL": "pkg:golang/golang.org/x/crypto@v0.40.0"
+      },
+      {
+        "vulnerabilityID": "CVE-2025-58183",
+        "resource": "stdlib",
+        "installedVersion": "v1.24.6",
+        "fixedVersion": "1.24.8, 1.25.2",
+        "publishedDate": "2025-10-29T23:16:19Z",
+        "lastModifiedDate": "2025-11-04T22:16:33Z",
+        "severity": "HIGH",
+        "title": "golang: archive/tar: Unbounded allocation when parsing GNU sparse map",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-58183",
+        "links": [],
+        "score": 7.5,
+        "target": "",
+        "packagePURL": "pkg:golang/stdlib@v1.24.6"
+      },
+      {
+        "vulnerabilityID": "CVE-2025-61729",
+        "resource": "stdlib",
+        "installedVersion": "v1.24.6",
+        "fixedVersion": "1.24.11, 1.25.5",
+        "publishedDate": "2025-12-02T19:15:51Z",
+        "lastModifiedDate": "2025-12-19T18:25:28Z",
+        "severity": "HIGH",
+        "title": "crypto/x509: Excessive resource consumption when printing error string for host certificate validation in crypto/x509",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-61729",
+        "links": [],
+        "score": 7.5,
+        "target": "",
+        "packagePURL": "pkg:golang/stdlib@v1.24.6"
+      },
+      {
+        "vulnerabilityID": "CVE-2025-47912",
+        "resource": "stdlib",
+        "installedVersion": "v1.24.6",
+        "fixedVersion": "1.24.8, 1.25.2",
+        "publishedDate": "2025-10-29T23:16:18Z",
+        "lastModifiedDate": "2025-11-04T22:16:16Z",
+        "severity": "MEDIUM",
+        "title": "net/url: Insufficient validation of bracketed IPv6 hostnames in net/url",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-47912",
+        "links": [],
+        "score": 5.3,
+        "target": "",
+        "packagePURL": "pkg:golang/stdlib@v1.24.6"
+      },
+      {
+        "vulnerabilityID": "CVE-2025-58185",
+        "resource": "stdlib",
+        "installedVersion": "v1.24.6",
+        "fixedVersion": "1.24.8, 1.25.2",
+        "publishedDate": "2025-10-29T23:16:19Z",
+        "lastModifiedDate": "2025-11-04T22:16:33Z",
+        "severity": "MEDIUM",
+        "title": "encoding/asn1: Parsing DER payload can cause memory exhaustion in encoding/asn1",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-58185",
+        "links": [],
+        "score": 5.3,
+        "target": "",
+        "packagePURL": "pkg:golang/stdlib@v1.24.6"
+      },
+      {
+        "vulnerabilityID": "CVE-2025-58186",
+        "resource": "stdlib",
+        "installedVersion": "v1.24.6",
+        "fixedVersion": "1.24.8, 1.25.2",
+        "publishedDate": "2025-10-29T23:16:19Z",
+        "lastModifiedDate": "2025-11-04T22:16:33Z",
+        "severity": "MEDIUM",
+        "title": "golang.org/net/http: Lack of limit when parsing cookies can cause memory exhaustion in net/http",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-58186",
+        "links": [],
+        "score": 5.3,
+        "target": "",
+        "packagePURL": "pkg:golang/stdlib@v1.24.6"
+      },
+      {
+        "vulnerabilityID": "CVE-2025-58187",
+        "resource": "stdlib",
+        "installedVersion": "v1.24.6",
+        "fixedVersion": "1.24.9, 1.25.3",
+        "publishedDate": "2025-10-29T23:16:19Z",
+        "lastModifiedDate": "2025-11-20T23:15:52Z",
+        "severity": "MEDIUM",
+        "title": "crypto/x509: Quadratic complexity when checking name constraints in crypto/x509",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-58187",
+        "links": [],
+        "score": 5.3,
+        "target": "",
+        "packagePURL": "pkg:golang/stdlib@v1.24.6"
+      },
+      {
+        "vulnerabilityID": "CVE-2025-58188",
+        "resource": "stdlib",
+        "installedVersion": "v1.24.6",
+        "fixedVersion": "1.24.8, 1.25.2",
+        "publishedDate": "2025-10-29T23:16:19Z",
+        "lastModifiedDate": "2025-11-04T22:16:33Z",
+        "severity": "MEDIUM",
+        "title": "crypto/x509: golang: Panic when validating certificates with DSA public keys in crypto/x509",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-58188",
+        "links": [],
+        "score": 5.3,
+        "target": "",
+        "packagePURL": "pkg:golang/stdlib@v1.24.6"
+      },
+      {
+        "vulnerabilityID": "CVE-2025-58189",
+        "resource": "stdlib",
+        "installedVersion": "v1.24.6",
+        "fixedVersion": "1.24.8, 1.25.2",
+        "publishedDate": "2025-10-29T23:16:19Z",
+        "lastModifiedDate": "2025-11-04T22:16:33Z",
+        "severity": "MEDIUM",
+        "title": "crypto/tls: go crypto/tls ALPN negotiation error contains attacker controlled information",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-58189",
+        "links": [],
+        "score": 5.3,
+        "target": "",
+        "packagePURL": "pkg:golang/stdlib@v1.24.6"
+      },
+      {
+        "vulnerabilityID": "CVE-2025-61723",
+        "resource": "stdlib",
+        "installedVersion": "v1.24.6",
+        "fixedVersion": "1.24.8, 1.25.2",
+        "publishedDate": "2025-10-29T23:16:19Z",
+        "lastModifiedDate": "2025-11-04T22:16:36Z",
+        "severity": "MEDIUM",
+        "title": "encoding/pem: Quadratic complexity when parsing some invalid inputs in encoding/pem",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-61723",
+        "links": [],
+        "score": 5.3,
+        "target": "",
+        "packagePURL": "pkg:golang/stdlib@v1.24.6"
+      },
+      {
+        "vulnerabilityID": "CVE-2025-61724",
+        "resource": "stdlib",
+        "installedVersion": "v1.24.6",
+        "fixedVersion": "1.24.8, 1.25.2",
+        "publishedDate": "2025-10-29T23:16:20Z",
+        "lastModifiedDate": "2025-11-04T22:16:36Z",
+        "severity": "MEDIUM",
+        "title": "net/textproto: Excessive CPU consumption in Reader.ReadResponse in net/textproto",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-61724",
+        "links": [],
+        "score": 5.3,
+        "target": "",
+        "packagePURL": "pkg:golang/stdlib@v1.24.6"
+      },
+      {
+        "vulnerabilityID": "CVE-2025-61725",
+        "resource": "stdlib",
+        "installedVersion": "v1.24.6",
+        "fixedVersion": "1.24.8, 1.25.2",
+        "publishedDate": "2025-10-29T23:16:20Z",
+        "lastModifiedDate": "2025-12-09T18:15:56Z",
+        "severity": "MEDIUM",
+        "title": "net/mail: Excessive CPU consumption in ParseAddress in net/mail",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-61725",
+        "links": [],
+        "score": 5.3,
+        "target": "",
+        "packagePURL": "pkg:golang/stdlib@v1.24.6"
+      },
+      {
+        "vulnerabilityID": "CVE-2025-61727",
+        "resource": "stdlib",
+        "installedVersion": "v1.24.6",
+        "fixedVersion": "1.24.11, 1.25.5",
+        "publishedDate": "2025-12-03T20:16:25Z",
+        "lastModifiedDate": "2025-12-18T20:15:10Z",
+        "severity": "MEDIUM",
+        "title": "golang: crypto/x509: excluded subdomain constraint does not restrict wildcard SANs",
+        "primaryLink": "https://avd.aquasec.com/nvd/cve-2025-61727",
+        "links": [],
+        "score": 6.5,
+        "target": "",
+        "packagePURL": "pkg:golang/stdlib@v1.24.6"
+      }
+    ]
+  }
+}
