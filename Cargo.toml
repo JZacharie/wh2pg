@@ -41,8 +41,16 @@ hmac = "0.12"
 sha2 = "0.10"
 lazy_static = "1.4"
 
+# Development profile - faster builds
+[profile.dev]
+opt-level = 0
+debug = true
+incremental = true
+
+# Release profile - optimized for production
 [profile.release]
-lto = true
+lto = "thin"  # thin LTO est plus rapide que full LTO
 strip = true
 opt-level = 3
-codegen-units = 1
+codegen-units = 16  # Augmenté pour paralléliser la compilation (1 = lent mais plus optimisé)
+

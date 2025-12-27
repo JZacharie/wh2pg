@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+.github
+
+# Rust
+target/
+**/*.rs.bk
+*.pdb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# CI/CD
+.gitlab-ci.yml
+
+# Documentation
+*.md
+!README.md
+docs/
+examples/
+assets/
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Kubernetes/Helm
+helm/
+*.yaml
+*.yml
+!Cargo.toml
+
+# Misc
+.env
+.env.*
+!.env.example
