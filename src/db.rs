@@ -3,8 +3,20 @@ use std::env;
 use tracing::info;
 
 pub async fn init_pool() -> PgPool {
-    let database_url = env::var("DATABASE_URL")
-        .expect("DATABASE_URL must be set");
+    // Try to get DATABASE_URL first, otherwise build it from individual components
+    let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| {
+        let host = env::var("DB_HOST").expect("DB_HOST must be set");
+        let port = env::var("DB_PORT").unwrap_or_else(|_| "5432".to_string());
+        let database = env::var("DB_NAME").expect("DB_NAME must be set");
+        let user = env::var("DB_USER").expect("DB_USER must be set");
+        let password = env::var("DB_PASSWORD").expect("DB_PASSWORD must be set");
+        let ssl_mode = env::var("DB_SSL_MODE").unwrap_or_else(|_| "prefer".to_string());
+        
+        format!(
+            "postgresql://{}:{}@{}:{}/{}?sslmode={}",
+            user, password, host, port, database, ssl_mode
+        )
+    });
 
     let pool_size = env::var("DB_POOL_SIZE")
         .unwrap_or_else(|_| "10".to_string())
