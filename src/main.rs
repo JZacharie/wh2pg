@@ -14,6 +14,8 @@ use tracing_subscriber::{layer::SubscriberExt, Registry};
 mod db;
 mod handlers;
 mod models;
+mod trivy_models;
+mod trivy_handlers;
 
 fn init_telemetry() {
     // Set OpenTelemetry propagator
@@ -62,6 +64,11 @@ async fn main() -> std::io::Result<()> {
         panic!("Failed to initialize database: {}", e);
     }
 
+    // Initialize Trivy-specific schemas
+    if let Err(e) = trivy_handlers::init_trivy_schemas(&pool).await {
+        panic!("Failed to initialize Trivy schemas: {}", e);
+    }
+
     let host = env::var("SERVER_HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
     let port = env::var("SERVER_PORT").unwrap_or_else(|_| "8080".to_string());
     let addr = format!("{}:{}", host, port);
@@ -79,6 +86,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .wrap(RequestTracing::new())
             .route("/webhook", web::post().to(handlers::receive_webhook))
+            .route("/webhook/trivy", web::post().to(trivy_handlers::receive_trivy_webhook))
             .route("/health", web::get().to(handlers::health_check))
             .route("/metrics", web::get().to(handlers::metrics))
     })

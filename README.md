@@ -126,6 +126,84 @@ curl -X POST http://localhost:8080/webhook \
 }
 ```
 
+### POST /webhook/trivy
+
+Reçoit un webhook Trivy (rapports de sécurité).
+
+**Supported Report Types:**
+- `VulnerabilityReport` - Rapports de vulnérabilités d'images
+- `ConfigAuditReport` - Audits de configuration Kubernetes
+- `RbacAssessmentReport` - Évaluations RBAC
+- `ExposedSecretReport` - Secrets exposés
+- `ClusterComplianceReport` - Conformité du cluster
+
+**Request Example (VulnerabilityReport):**
+```bash
+curl -X POST http://localhost:8080/webhook/trivy \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "VulnerabilityReport",
+    "name": "deployment-nginx",
+    "namespace": "default",
+    "uid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "report": {
+      "scanner": {
+        "name": "Trivy",
+        "vendor": "Aqua Security",
+        "version": "0.48.0"
+      },
+      "artifact": {
+        "repository": "nginx",
+        "tag": "1.21.0"
+      },
+      "summary": {
+        "criticalCount": 5,
+        "highCount": 12,
+        "mediumCount": 8,
+        "lowCount": 3
+      },
+      "vulnerabilities": [...]
+    }
+  }'
+```
+
+**Response:**
+```json
+{
+  "status": "success",
+  "id": 123,
+  "report_type": "VulnerabilityReport",
+  "message": "Trivy report received and stored"
+}
+```
+
+### Database Schema for Trivy Reports
+
+#### Vulnerability Reports (`trivy_vulnerability_reports`)
+- `report_uid` - Unique identifier du rapport
+- `name` - Nom de la ressource scannée
+- `namespace` - Namespace Kubernetes
+- `image_repository`, `image_tag`, `image_digest` - Informations de l'image
+- `critical_count`, `high_count`, `medium_count`, `low_count` - Compteurs de sévérité
+- `full_report` - Rapport complet en JSONB
+
+#### Config Audit Reports (`trivy_configaudit_reports`)
+- Audits de configuration Kubernetes
+- Compteurs de problèmes par sévérité
+- Rapport complet des checks de configuration
+
+#### RBAC Reports (`trivy_rbac_reports`)
+- Évaluations des permissions RBAC
+- Détection des privilèges excessifs
+
+#### Secret Reports (`trivy_secret_reports`)
+- Détection de secrets exposés
+- Clés API, tokens, mots de passe en clair
+
+#### Compliance Reports (`trivy_compliance_reports`)
+- Rapports de conformité (CIS, NSA, PSS)
+- Compteurs pass/fail par contrôle
+
 ### GET /health
 
 Endpoint de santé pour Kubernetes.
@@ -462,7 +540,112 @@ docker pull ghcr.io/jzacharie/wh2pg:latest
 docker pull ghcr.io/jzacharie/wh2pg:1.0.1
 ```
 
-## 📊 Monitoring
+## � Intégration Trivy Operator
+
+### Configuration du Webhook Trivy
+
+Pour activer l'envoi des rapports Trivy vers wh2pg, configurez le webhook dans les values du Trivy Operator :
+
+```yaml
+operator:
+  webhookBroadcastURL: "https://wh2pg.your-domain.com/webhook/trivy"
+  webhookBroadcastTimeout: 30s
+  webhookSendDeletedReports: true
+```
+
+### Exemple de Configuration ArgoCD
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: trivy-operator
+  namespace: argocd
+spec:
+  destination:
+    namespace: trivy-system
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+    - chart: trivy-operator
+      repoURL: https://aquasecurity.github.io/helm-charts
+      targetRevision: '*'
+      helm:
+        valueFiles:
+          - $values/values/trivy-operator/values.yaml
+    - ref: values
+      repoURL: git@github.com:your-org/your-repo.git
+      targetRevision: main
+```
+
+### Types de Rapports Supportés
+
+| Type de Rapport | Table PostgreSQL | Description |
+|----------------|------------------|-------------|
+| VulnerabilityReport | `trivy_vulnerability_reports` | Vulnérabilités CVE dans les images |
+| ConfigAuditReport | `trivy_configaudit_reports` | Problèmes de configuration K8s |
+| RbacAssessmentReport | `trivy_rbac_reports` | Évaluation des permissions RBAC |
+| ExposedSecretReport | `trivy_secret_reports` | Secrets exposés dans le code |
+| ClusterComplianceReport | `trivy_compliance_reports` | Conformité CIS/NSA/PSS |
+
+### Requêtes SQL Utiles
+
+```sql
+-- Top 10 images avec le plus de vulnérabilités critiques
+SELECT 
+    image_repository, 
+    image_tag, 
+    critical_count, 
+    high_count,
+    received_at
+FROM trivy_vulnerability_reports
+ORDER BY critical_count DESC, high_count DESC
+LIMIT 10;
+
+-- Namespaces avec le plus de problèmes de configuration
+SELECT 
+    namespace, 
+    COUNT(*) as total_reports,
+    SUM(critical_count) as total_critical,
+    SUM(high_count) as total_high
+FROM trivy_configaudit_reports
+GROUP BY namespace
+ORDER BY total_critical DESC, total_high DESC;
+
+-- Évolution des vulnérabilités dans le temps
+SELECT 
+    DATE(received_at) as scan_date,
+    SUM(critical_count) as critical,
+    SUM(high_count) as high,
+    SUM(medium_count) as medium
+FROM trivy_vulnerability_reports
+WHERE received_at > NOW() - INTERVAL '30 days'
+GROUP BY DATE(received_at)
+ORDER BY scan_date;
+
+-- Secrets exposés par namespace
+SELECT 
+    namespace,
+    name,
+    critical_count + high_count as severe_secrets,
+    received_at
+FROM trivy_secret_reports
+WHERE critical_count > 0 OR high_count > 0
+ORDER BY severe_secrets DESC;
+```
+
+### Visualisation avec Grafana
+
+Les données stockées dans PostgreSQL peuvent être visualisées avec Grafana :
+
+1. Ajouter PostgreSQL comme source de données
+2. Créer des dashboards pour :
+   - Tendances de vulnérabilités
+   - Top images vulnérables
+   - Conformité par namespace
+   - Alertes sur secrets exposés
+
+## �📊 Monitoring
 
 ### Logs
 
