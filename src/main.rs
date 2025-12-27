@@ -78,11 +78,18 @@ async fn main() -> std::io::Result<()> {
         .parse::<usize>()
         .expect("WORKERS must be a number");
 
+    let max_payload_size = env::var("MAX_PAYLOAD_SIZE")
+        .unwrap_or_else(|_| "20971520".to_string()) // 20MB default
+        .parse::<usize>()
+        .unwrap_or(20971520);
+
     info!("Server listening on {}", addr);
+    info!("Max payload size configured to: {} bytes", max_payload_size);
 
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
+            .app_data(web::JsonConfig::default().limit(max_payload_size))
             .wrap(middleware::Logger::default())
             .wrap(RequestTracing::new())
             .route("/webhook", web::post().to(handlers::receive_webhook))
