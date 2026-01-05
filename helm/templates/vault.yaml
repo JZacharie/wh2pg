@@ -1,0 +1,49 @@
+{{- if .Values.vault.enabled -}}
+{{- $tokenSecretName := .Values.vault.auth.secretName | default (printf "%s-vault-token" (include "wh2pg.fullname" .)) -}}
+{{- $tokenSecretKey := .Values.vault.auth.secretKey | default "token" -}}
+{{- if .Values.vault.auth.token }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $tokenSecretName }}
+  namespace: {{ .Release.Namespace }}
+type: Opaque
+stringData:
+  {{ $tokenSecretKey }}: {{ .Values.vault.auth.token | quote }}
+---
+{{- end }}
+apiVersion: external-secrets.io/v1
+kind: SecretStore
+metadata:
+  name: {{ include "wh2pg.fullname" . }}-vault
+  namespace: {{ .Release.Namespace }}
+spec:
+  provider:
+    vault:
+      server: {{ .Values.vault.address | quote }}
+      path: {{ .Values.vault.mountPath | default "secret" | quote }}
+      version: v2
+      auth:
+        tokenSecretRef:
+          name: {{ $tokenSecretName }}
+          key: {{ $tokenSecretKey }}
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: {{ include "wh2pg.postgresql.secretName" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  refreshInterval: "1h"
+  secretStoreRef:
+    name: {{ include "wh2pg.fullname" . }}-vault
+    kind: SecretStore
+  target:
+    name: {{ include "wh2pg.postgresql.secretName" . }}
+    creationPolicy: Owner
+  data:
+  - secretKey: {{ .Values.postgresql.external.existingSecretPasswordKey | default "password" }}
+    remoteRef:
+      key: {{ .Values.vault.secretPath }}
+      property: {{ .Values.vault.secretKey }}
+{{- end }}

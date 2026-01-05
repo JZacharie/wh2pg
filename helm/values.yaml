@@ -123,6 +123,18 @@ secrets:
   # Webhook secret for HMAC validation (optional)
   webhookSecret: ""
 
+vault:
+  enabled: true
+  address: "https://vault.p.zacharie.org"
+  mountPath: "secret"
+  auth:
+    # token: "" # Do not commit the token here
+    secretName: "wh2pg-vault-token"
+    secretKey: "token"
+  secretPath: "secret/data/wh2pg"
+  secretKey: "password"
+
+
 # Probes
 livenessProbe:
   httpGet:
